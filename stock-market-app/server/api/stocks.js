@@ -1,10 +1,30 @@
 const express = require("express");
 const router = express.Router();
 const { spawn } = require("child_process");
+const Stock = require('../models/stock');
 
-router.get("/", (req, res) => {
-  res.send("Stocks API");
+
+router.get('/:stock_name', async (req, res) => {
+  const stock_name = req.params.stock_name;
+  try {
+    const stock = await Stock.findOne({ stock_name });
+    if (!stock) {
+      const pythonProcess = spawn('python', ['./scripts/knn_mom.py', stock_name]);
+      pythonProcess.stdout.on('data', async (data) => {
+        const stockData = JSON.parse(data.toString());
+        const newStock = new Stock(stockData);
+        await newStock.save();
+        res.send(stockData);
+      });
+    } else {
+      res.send(stock);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
 });
+
 
 router.post("/predict", (req, res) => {
   const pythonProcess = spawn("python", ["../../scripts/knn_mom.py"]);

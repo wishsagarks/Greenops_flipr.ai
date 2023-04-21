@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import StockList from './components/StockList';
-import StockDetail from './components/StockDetail';
+import StockDetail from './components/StockDetails';
 
 function App() {
   const [stocks, setStocks] = useState([]);
